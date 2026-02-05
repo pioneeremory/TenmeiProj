@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import AllCharacters
-# Remember all urls are prefaced by http://localhost:8000/api/v1/pokemon/
+from .views import AllCharacters, AllSessions
 urlpatterns = [
-    path('', AllCharacters.as_view(), name='all_characters')
+    path('characters/', AllCharacters.as_view(), name='all_characters'),
+    path('sessions/', AllSessions.as_view(), name='all_sessions')
 ]
