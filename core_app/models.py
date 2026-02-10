@@ -28,4 +28,5 @@ class GameSession(models.Model):
     def roll_dice(self, difficulty: int) -> bool: # this method will be called by the view to update the session's dice rolls and return a boolean value of whether or not the character passes
         roll = random.randint(1,6)
         total_roll = roll + self.grit
-        return total_roll >= difficulty
+        return roll, total_roll >= difficulty
+           
