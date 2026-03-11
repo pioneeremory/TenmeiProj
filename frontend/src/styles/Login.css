@@ -1,0 +1,67 @@
+/* Container for the whole page */
+.auth-container {
+  background-color: #1a1a1b; /* Dark Slate */
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #dcd0c0; /* Parchment */
+  font-family: 'Georgia', serif;
+}
+
+/* The actual Box */
+.auth-card {
+  background: #252526;
+  padding: 2.5rem;
+  border: 2px solid #cd7f32; /* Bronze */
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(139, 0, 0, 0.3); /* Subtle Red Glow */
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+h2 {
+  color: #cd7f32;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #8b0000;
+  display: inline-block;
+}
+
+/* Inputs */
+.auth-form input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  background: #1a1a1b;
+  border: 1px solid #cd7f32;
+  color: white;
+  box-sizing: border-box;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #8b0000; /* Red highlight on focus */
+  box-shadow: 0 0 5px #8b0000;
+}
+
+/* The "Fire" Button */
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  background-color: #8b0000; /* Deep Red */
+  color: white;
+  border: 1px solid #cd7f32;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+  background-color: #cd7f32; /* Turns Bronze on hover */
+  color: #1a1a1b;
+}
