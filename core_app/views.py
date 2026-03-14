@@ -23,7 +23,12 @@ class AllCharacters(APIView):
         serializer = MainCharacterSerializer(data=request.data)
         if serializer.is_valid():
             # Pass the user during the save process
-            serializer.save(user=request.user) 
+            character = serializer.save(user=request.user) # new variable to store the character and later pass to start a new game state
+            # Start a new game state for the character
+            GameSession.objects.get_or_create(
+                character=character,
+                defaults={'rice': 6, 'grit': 1, 'current_cycle': 1}
+            )
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)  
               

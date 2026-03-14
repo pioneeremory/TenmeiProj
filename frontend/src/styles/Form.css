@@ -1,0 +1,70 @@
+.gender-options {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 20px;
+}
+
+.gender-label {
+  cursor: pointer; /* Makes it clear the PNG is clickable */
+  padding: 10px;
+  border: 2px solid transparent; /* Prepare for border style */
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* 📍 Highlight the image when selected */
+.gender-label.selected {
+  border-color: #f7a072; /* A glowing, fire-like bronze */
+  background-color: rgba(247, 160, 114, 0.1);
+  box-shadow: 0 0 10px rgba(247, 160, 114, 0.5);
+}
+
+.gender-png {
+  max-width: 100px;
+  display: block;
+}
+
+/* Hide the ugly standard radio button */
+.gender-label input[type="radio"] {
+  display: none;
+}
+
+/* Container for the gender choices */
+.art-options {
+  display: flex;
+  justify-content: center; /* Centers the two options */
+  gap: 30px;               /* Adds space between the characters */
+  margin-top: 15px;
+}
+
+/* Individual character label wrapper */
+.art-label {
+  display: flex;
+  flex-direction: column;  /* Puts text below the image */
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  border: 2px solid transparent; /* Hidden border until selected */
+  padding: 10px;
+  border-radius: 8px;
+}
+
+/* 🖼️ Constraints for the massive images */
+.art-label img {
+  width: 120px;            /* Adjust this to your preferred size */
+  height: auto;
+  image-rendering: pixelated; /* Keeps pixel art sharp, not blurry */
+  margin-bottom: 8px;
+}
+
+/* 📍 Highlighting the selected character */
+.art-label.selected {
+  border-color: #b08d57;    /* Bronze/Fire glow color */
+  background-color: rgba(176, 141, 87, 0.15);
+  transform: scale(1.05);   /* Slight pop effect */
+}
+
+/* Hide the default radio circles */
+.art-label input[type="radio"] {
+  display: none;
+}

@@ -1,107 +1,105 @@
- #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* App.css */
+
+/* 1. Global Layout Reset */
+#root {
+  /* Removed max-width: 1280px to allow full-screen breadth */
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  /* Use the Kyoto Fire image as a fixed background */
+  background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
+              url('./assets/characterSelectionBG.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
-
-
-
-/* Reset default list styles */
+/* 2. Modern Navbar (Expands to edges) */
 .navbar {
   list-style: none;
   margin: 0;
-  padding: 0;
-  background-color: #333; /* Background color for the navbar */
+  padding: 1rem 5%; /* Wider horizontal padding */
+  background: rgba(0, 0, 0, 0.8);
+  border-bottom: 1px solid #cd7f32; /* Bronze underline */
+  display: flex;
+  justify-content: flex-end; /* Keeps links to the right */
+  backdrop-filter: blur(5px);
+  z-index: 1000;
 }
 
 .navbar li {
-  display: inline-block; /* Display list items horizontally */
-  margin-right: 20px; /* Spacing between list items */
+  margin-left: 30px;
 }
 
-.navbar li:last-child {
-  margin-right: 0; /* Remove right margin from the last item */
-}
-
-.navbar a {
-  text-decoration: none;
-  color: #fff; /* Text color for the links */
-  font-weight: bold; /* Bold font for links */
-  padding: 10px 15px; /* Padding for the links */
-  border-radius: 4px; /* Rounded corners for the links */
-}
-
-.navbar a:hover {
-  background-color: #555; /* Background color on hover */
-}
-
-/*Below is the CSS for the login auth*/
-/* Container for the whole page */
+/* 3. The Reimagined Auth Container (Full screen, wide cards) */
 .auth-container {
-  background-color: #1a1a1b; /* Dark Slate */
-  min-height: 100vh;
+  flex: 1; /* Fills remaining height */
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #dcd0c0; /* Parchment */
+  padding: 40px;
+  color: #dcd0c0;
   font-family: 'Georgia', serif;
 }
 
-/* The actual Box */
 .auth-card {
-  background: #252526;
-  padding: 2.5rem;
-  border: 2px solid #cd7f32; /* Bronze */
-  border-radius: 4px;
-  box-shadow: 0 0 20px rgba(139, 0, 0, 0.3); /* Subtle Red Glow */
+  background: rgba(37, 37, 38, 0.85); /* Semi-transparent */
+  padding: 4rem;
+  border: 1px solid #cd7f32;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   width: 100%;
-  max-width: 400px;
+  /* Increased max-width to accommodate side-by-side characters */
+  max-width: 900px; 
   text-align: center;
+  backdrop-filter: blur(10px); /* Modern glass effect */
 }
 
+/* 4. Responsive Header */
 h2 {
   color: #cd7f32;
   text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #8b0000;
+  letter-spacing: 5px; /* More cinematic spacing */
+  margin-bottom: 3rem;
+  border-bottom: 2px solid #8b0000;
   display: inline-block;
+  padding-bottom: 10px;
 }
 
-/* Inputs */
+/* 5. Inputs (Styled for dark theme) */
 .auth-form input {
   width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  background: #1a1a1b;
+  padding: 15px;
+  margin: 15px 0;
+  background: rgba(26, 26, 27, 0.9);
   border: 1px solid #cd7f32;
   color: white;
   box-sizing: border-box;
+  font-size: 1.1rem;
 }
 
-.auth-form input:focus {
-  outline: none;
-  border-color: #8b0000; /* Red highlight on focus */
-  box-shadow: 0 0 5px #8b0000;
-}
-
-/* The "Fire" Button */
+/* 6. Action Button (The "Fire" Button) */
 .btn-submit {
   width: 100%;
-  padding: 12px;
-  margin-top: 20px;
-  background-color: #8b0000; /* Deep Red */
+  max-width: 400px; /* Keep the button centered and not awkwardly wide */
+  padding: 16px;
+  margin-top: 30px;
+  background-color: #8b0000;
   color: white;
   border: 1px solid #cd7f32;
   cursor: pointer;
   text-transform: uppercase;
   font-weight: bold;
-  transition: all 0.3s ease;
+  letter-spacing: 2px;
+  transition: all 0.4s ease;
 }
 
 .btn-submit:hover {
-  background-color: #cd7f32; /* Turns Bronze on hover */
+  background-color: #cd7f32;
   color: #1a1a1b;
+  transform: translateY(-2px); /* Slight lift on hover */
+  box-shadow: 0 5px 15px rgba(205, 127, 50, 0.4);
 }

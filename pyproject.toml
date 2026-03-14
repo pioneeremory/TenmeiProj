@@ -16,5 +16,5 @@ dependencies = [
     "uvicorn",
     "ollama",
     "python-dotenv",
-    "requests"
+    "requests",
 ]
