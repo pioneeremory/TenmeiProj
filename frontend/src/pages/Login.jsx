@@ -17,7 +17,7 @@ export default function Login({handleInputChange, formData, handleToken}) {
     if(!token) {
       setResponseMsg("Error logging in")
     } else {
-      localStorage.setItem("userToken", token); /*AI told me to add this when the token was not being passed if no character existed after login */
+      localStorage.setItem("userToken", token); /*AI told me to add this when the token was not being passed if no (in-ganme) character existed after login */
       handleToken(token)
       setShouldRedirect(true)
     }

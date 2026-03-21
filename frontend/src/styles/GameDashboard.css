@@ -1,0 +1,70 @@
+/* frontend/src/styles/GameDashboard.css */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 25px;
+  padding: 40px;
+  height: 85vh; /* Expands to fill the screen */
+  font-family: 'Georgia', serif;
+}
+
+.stats-sidebar, .hazard-sidebar {
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid #cd7f32;
+  border-radius: 12px;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.stat-row {
+  font-size: 1.4rem;
+  margin: 15px 0;
+  color: #f3e5ab; /* Maize color for readability */
+}
+
+.heat-meter.danger {
+  color: #ff4500;
+  text-shadow: 0 0 10px #8b0000;
+  animation: flicker 1.5s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* Sidebar Portrait styling */
+.sidebar-portrait {
+  width: 150px;
+  height: auto;
+  image-rendering: pixelated;
+  border: 2px solid #cd7f32;
+  border-radius: 4px;
+  padding: 5px;
+  background: rgba(0,0,0,0.3);
+}
+
+/* Scrollable log behavior */
+.history-log {
+  opacity: 0.5;
+  font-size: 0.95rem;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap; /* Respects the newlines from Python */
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(205, 127, 50, 0.2);
+}
+
+.latest-entry {
+  color: #f3e5ab; /* Brighter gold for the current action */
+  font-size: 1.2rem;
+  line-height: 1.5;
+  min-height: 60px;
+}
+
+.bronze-divider {
+  border: 0;
+  border-top: 1px solid #cd7f32;
+  margin: 20px 0;
+}

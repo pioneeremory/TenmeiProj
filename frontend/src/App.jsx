@@ -4,10 +4,10 @@ import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar"
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-// import Wines from './pages/Wines';
 import Logout from './pages/Logout'
 import CreateCharacter from './pages/CharacterCreate'
 import SelectCharacter from './pages/CharacterSelect'
+import GameDashboard from "./pages/GameDashboard";
 
 
 
@@ -39,6 +39,7 @@ function App() {
                 <Route path="/logout" element={<Logout userToken={userToken} setUserToken={setUserToken}/>} /> 
                 <Route path="/characters" element={<SelectCharacter />} />
                 <Route path="/create-character" element={<CreateCharacter />} />
+                <Route path="/game/:sessionId" element={<GameDashboard />} />
             </Routes>
           </Router>
   );

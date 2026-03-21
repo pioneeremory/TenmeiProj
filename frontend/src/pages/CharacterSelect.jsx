@@ -1,11 +1,37 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCharacters } from "../api/authApi"; 
+import { getSessions, createSession } from "../api/authApi";
 
 function SelectCharacter() {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const handleSelect = async (characterId) => {
+  const token = localStorage.getItem("userToken");
+
+  try {
+    // 1. Fetch all sessions for this user
+    const sessions = await getSessions(token);
+    
+    // 2. Check if a session already exists for this specific character
+    let activeSession = sessions.find(s => s.character === characterId);
+
+    if (activeSession) {
+      console.log("Resuming existing session:", activeSession.id);
+    } else {
+      console.log("No session found. Forging new path...");
+      // 3. If no session exists, create the initial one (Cycle 1)
+      activeSession = await createSession(token, { character: characterId });
+    }
+
+    // 4. Navigate to the Game Dashboard with the Session ID
+    navigate(`/game/${activeSession.id}`);
+    
+  } catch (err) {
+    console.error("The records are lost in the fire:", err);
+  }
+};
 
   useEffect(() => {
   // 1. Grab the token
