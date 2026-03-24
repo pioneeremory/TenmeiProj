@@ -1,111 +1,100 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCharacters } from "../api/authApi"; 
-import { getSessions, createSession } from "../api/authApi";
+import { getCharacters, getSessions, createSession, deleteCharacter } from "../api/authApi";
 
 function SelectCharacter() {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [statusMessage, setStatusMessage] = useState(""); 
   const navigate = useNavigate();
-  const handleSelect = async (characterId) => {
-  const token = localStorage.getItem("userToken");
 
-  try {
-    // 1. Fetch all sessions for this user
-    const sessions = await getSessions(token);
-    
-    // 2. Check if a session already exists for this specific character
-    let activeSession = sessions.find(s => s.character === characterId);
-
-    if (activeSession) {
-      console.log("Resuming existing session:", activeSession.id);
-    } else {
-      console.log("No session found. Forging new path...");
-      // 3. If no session exists, create the initial one (Cycle 1)
-      activeSession = await createSession(token, { character: characterId });
-    }
-
-    // 4. Navigate to the Game Dashboard with the Session ID
-    navigate(`/game/${activeSession.id}`);
-    
-  } catch (err) {
-    console.error("The records are lost in the fire:", err);
-  }
-};
-
+  // 1. Fetch Characters on Load
   useEffect(() => {
-  // 1. Grab the token
-  const token = localStorage.getItem("userToken");
-  
-  // 2. Debug: See what is actually being sent
-  console.log("Fetching characters with token:", token);
-
-  if (!token) {
-    console.error("No token found! Redirecting to login...");
-    navigate("/login"); 
-    return;
-  }
-  getCharacters(token).then((data) => {
-    if (Array.isArray(data)) {
-      setCharacters(data);
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      navigate("/login");
+      return;
     }
-    setLoading(false);
-  });
-}, []);
 
-  const fetchData = async () => {
-    try {
-      const data = await getCharacters(token);
-      
-      // 3. Safety Check: If Django sends back an error object instead of an array
-      if (data && Array.isArray(data)) {
+    getCharacters(token).then((data) => {
+      if (Array.isArray(data)) {
         setCharacters(data);
-      } else {
-        console.error("Received unexpected data format:", data);
-        setCharacters([]); // Prevents .map() error
       }
-    } catch (err) {
-      console.error("Fetch failed:", err);
-    } finally {
       setLoading(false);
+    }).catch(err => {
+      console.error("Fetch failed:", err);
+      setLoading(false);
+    });
+  }, [navigate]);
+
+  // 2. Handle Character Selection (and Session logic)
+  const handleSelect = async (characterId) => {
+    const token = localStorage.getItem("userToken");
+
+    try {
+      const sessions = await getSessions(token);
+      let activeSession = sessions.find(s => s.character === characterId);
+
+      if (!activeSession) {
+        console.log("No session found. Forging new path...");
+        activeSession = await createSession(token, { character: characterId });
+      }
+
+      navigate(`/game/${activeSession.id}`);
+    } catch (err) {
+      console.error("The records are lost in the fire:", err);
     }
   };
 
-//   fetchData();
-// }, []);
-//   useEffect(() => {
-//     const token = localStorage.getItem("userToken");
+  // 3. Handle Deletion
+  const handleDelete = async (e, charId) => {
+    e.stopPropagation(); 
     
-//     // Call the GET API
-//     getCharacters(token)
-//       .then((data) => {
-//         setCharacters(data);
-//         setLoading(false);
-//       })
-//       .catch((err) => {
-//         console.error("Error fetching characters:", err);
-//         setLoading(false);
-//       });
-//   }, []);
+    const charObj = characters.find(c => c.id === charId);
+    const charName = charObj ? charObj.name : "The character";
 
-//   const handleSelect = (charId) => {
-//     // Logic to start the game session with this character
-//     console.log("Selected character ID:", charId);
-//     // navigate(`/game/${charId}`); 
-//   };
+    if (window.confirm(`Are you sure you want to turn ${charName} to ash?`)) {
+      const token = localStorage.getItem("userToken");
+      const success = await deleteCharacter(token, charId);
+      
+      if (success) {
+        setStatusMessage(`${charName} has been returned to the spirit world.`);
+        setCharacters(prev => prev.filter(c => c.id !== charId));
+        setTimeout(() => setStatusMessage(""), 3000);
+      }
+    }
+  };
 
-//   if (loading) return <div className="auth-container">Reading the scrolls...</div>;
+  if (loading) return <div className="auth-container">Reading the scrolls...</div>;
 
   return (
     <div className="auth-container">
       <div className="auth-card" style={{ maxWidth: '600px' }}>
         <h2>Choose Your Identity</h2>
+        
+        {statusMessage && (
+          <div className="delete-notification" style={{ color: '#d4af37', marginBottom: '10px' }}>
+            <span>🏮 {statusMessage}</span>
+          </div>
+        )}
+
         <div className="character-grid" style={{ display: 'grid', gap: '15px', marginTop: '20px' }}>
           {characters.map((char) => (
-            <div key={char.id} className="char-card" onClick={() => handleSelect(char.id)} 
-                 style={{ border: '1px solid #cd7f32', padding: '10px', cursor: 'pointer' }}>
+            <div 
+              key={char.id} 
+              className="char-card" 
+              onClick={() => handleSelect(char.id)} 
+              style={{ border: '1px solid #cd7f32', padding: '15px', cursor: 'pointer', position: 'relative' }}
+            >
               <h3>{char.name}</h3>
-              <p>{char.bio}</p>
+              <p>{char.bio || "A soul wandering the embers of Kyoto."}</p>
+              <button 
+                className="btn-delete-char" 
+                onClick={(e) => handleDelete(e, char.id)}
+                style={{ background: 'transparent', color: '#ff4500', border: '1px solid #ff4500', cursor: 'pointer', marginTop: '10px' }}
+              >
+                Delete
+              </button>
             </div>
           ))}
         </div>

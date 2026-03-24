@@ -16,17 +16,69 @@ class MainCharacter(models.Model):
         return self.name
 
 class GameSession(models.Model):
-    character = models.ForeignKey(
-        MainCharacter, 
-        on_delete=models.CASCADE, 
-        related_name="game_sessions"
-        )
-    grit = models.IntegerField(default=1)
-    rice = models.IntegerField(default=0)
+    character = models.ForeignKey(MainCharacter, on_delete=models.CASCADE, related_name="game_sessions")
+    grit = models.IntegerField(default=100)
+    rice = models.IntegerField(default=5)
     current_cycle = models.IntegerField(default=1)
+    
+    # THE MEMORY: Stores the full story history as a string
+    story_log = models.TextField(default="The journey begins in the ashes of Kyoto...")
+    
+    # THE THREAT: Scales the AI's difficulty and descriptions
+    fire_danger = models.IntegerField(default=10)
+    segments_left = models.IntegerField(default=3) # 3 actions per day
+    def __str__(self):
+        return f"{self.character.name} - Cycle {self.current_cycle}"
 
     def roll_dice(self, difficulty: int) -> bool: # this method will be called by the view to update the session's dice rolls and return a boolean value of whether or not the character passes
         roll = random.randint(1,6)
         total_roll = roll + self.grit
         return roll, total_roll >= difficulty
-           
+    def perform_action(self, action_type):
+        """Processes one of the 3 daily segments."""
+        if self.segments_left <= 0:
+            return "No segments left for today."
+
+        self.segments_left -= 1
+        summary = ""
+
+        if action_type == "SCAVENGE":
+            # High reward, high risk to Grit (Health)
+            found_rice = random.randint(1, 3)
+            grit_loss = random.randint(5, 15)
+            self.rice += found_rice
+            self.grit -= grit_loss
+            summary = f"Scavenged {found_rice} rice but lost {grit_loss} Grit to the heat."
+
+        elif action_type == "DOUSE":
+            # Spend Grit to lower the world threat
+            self.grit -= 10
+            reduction = random.randint(15, 25)
+            self.fire_danger = max(0, self.fire_danger - reduction)
+            summary = f"Fought the flames, reducing danger by {reduction}%."
+
+        elif action_type == "REST":
+            # Heal Grit at the cost of Rice
+            if self.rice >= 1:
+                self.rice -= 1
+                self.grit = min(100, self.grit + 20)
+                summary = "Rested and ate, recovering 20 Grit."
+            else:
+                summary = "Tried to rest without food; grit remained low."
+
+        # Every action makes the fire grow slightly
+        self.fire_danger += random.randint(2, 5)
+        
+        if self.segments_left == 0:
+            self.resolve_day_end()
+            
+        self.save()
+        return summary
+
+    def resolve_day_end(self):
+        """Triggered after the 3rd segment."""
+        self.current_cycle += 1
+        self.segments_left = 3
+        # The fire rages at night
+        self.fire_danger += 10 
+        self.save()

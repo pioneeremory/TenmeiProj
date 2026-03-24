@@ -17,6 +17,21 @@ export async function signup(context) {
   return body
 }
 
+export const deleteCharacter = async (token, charId) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/characters/${charId}/`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Token ${token}`,
+      },
+    });
+    return response.ok;
+  } catch (err) {
+    console.error("Delete failed:", err);
+    return false;
+  }
+};
+
 export async function login(context) {
   const payload = {
     method: "POST",
@@ -80,13 +95,11 @@ export async function createCharacter(token, characterData) {
   return await basicFetch("http://127.0.0.1:8000/api/characters/", payload)
 }
 
-// In authApi.js
 export async function getCharacters(token) {
   const res = await fetch("http://127.0.0.1:8000/api/characters/", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      // IMPORTANT: Ensure this says "Token " with a space!
       "Authorization": `Token ${token}` 
     }
   });
@@ -113,3 +126,20 @@ export async function restAction(token, sessionId) {
   // URL format: /api/sessions/{id}/rest/
   return await basicFetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/rest/`, payload);
 }
+
+export const performGameAction = async (token, sessionId, actionType) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/take_action/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Token ${token}`,
+      },
+      body: JSON.stringify({ action_type: actionType }),
+    });
+    return await response.json();
+  } catch (err) {
+    console.error("API Error:", err);
+    return null;
+  }
+};

@@ -1,40 +1,54 @@
 /* frontend/src/styles/GameDashboard.css */
+
+/* 1. LAYOUT & CONTAINERS */
 .dashboard-layout {
   display: grid;
   grid-template-columns: 280px 1fr 280px;
   gap: 25px;
   padding: 40px;
-  height: 85vh; /* Expands to fill the screen */
+  height: 85vh; /* Fixed height for the viewport */
   font-family: 'Georgia', serif;
+  box-sizing: border-box;
 }
 
+.story-engine {
+  display: flex;
+  flex-direction: column;
+  height: 85vh; /* Match layout height */
+  overflow: hidden; /* Contain children */
+}
+
+.narration-container {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 24px;
+  border-radius: 8px;
+  overflow: hidden; /* Essential for child scrolling */
+  border: 1px solid rgba(211, 175, 55, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+/* 2. SIDEBARS (Stats & Hazard) */
 .stats-sidebar, .hazard-sidebar {
-  background: rgba(20, 20, 20, 0.8);
+  background: rgba(20, 20, 20, 0.85);
   border: 1px solid #cd7f32;
   border-radius: 12px;
   padding: 20px;
   backdrop-filter: blur(8px);
+  /* 🕵️ THE FIX: This prevents the scrollbar from appearing */
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
 }
 
 .stat-row {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   margin: 15px 0;
-  color: #f3e5ab; /* Maize color for readability */
+  color: #f3e5ab; /* Soft maize */
 }
 
-.heat-meter.danger {
-  color: #ff4500;
-  text-shadow: 0 0 10px #8b0000;
-  animation: flicker 1.5s infinite;
-}
-
-@keyframes flicker {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
-}
-
-/* Sidebar Portrait styling */
 .sidebar-portrait {
   width: 150px;
   height: auto;
@@ -43,28 +57,116 @@
   border-radius: 4px;
   padding: 5px;
   background: rgba(0,0,0,0.3);
-}
-
-/* Scrollable log behavior */
-.history-log {
-  opacity: 0.5;
-  font-size: 0.95rem;
-  max-height: 250px;
-  overflow-y: auto;
-  white-space: pre-wrap; /* Respects the newlines from Python */
-  margin-bottom: 20px;
-  border-bottom: 1px solid rgba(205, 127, 50, 0.2);
-}
-
-.latest-entry {
-  color: #f3e5ab; /* Brighter gold for the current action */
-  font-size: 1.2rem;
-  line-height: 1.5;
-  min-height: 60px;
+  display: block;
+  margin: 0 auto;
 }
 
 .bronze-divider {
   border: 0;
-  border-top: 1px solid #cd7f32;
+  border-top: 1px solid rgba(205, 127, 50, 0.5);
   margin: 20px 0;
+}
+
+/* 3. THE HISTORY LOG (Compressed/Dimmed) */
+.history-log {
+  flex: 0 1 180px; /* 👈 Compressed: Won't grow past 180px, can shrink */
+  overflow-y: auto;
+  color: #666; /* Dimmed grey */
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding-bottom: 15px;
+  white-space: pre-wrap;
+  scrollbar-width: none; /* Hide scrollbar for cleaner look */
+  /* Fade effect for top of history */
+  mask-image: linear-gradient(to bottom, transparent, black 25%);
+}
+
+.history-log::-webkit-scrollbar {
+  display: none; /* Chrome/Safari hidden scrollbar */
+}
+
+/* 4. ACTIVE NARRATION (Gold/Focus) */
+.active-narration {
+  flex: 2; /* 👈 Focus: Takes up more room than history */
+  margin-top: 10px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  color: #d4af37 !important; /* Imperial Gold */
+  font-size: 1.15rem;
+  line-height: 1.7;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+  background: transparent !important;
+}
+
+.latest-entry, .prologue-text {
+  color: #d4af37 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* 5. INTERACTIVE ELEMENTS (Buttons & Hazards) */
+.action-bar {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+button {
+  background: rgba(30, 30, 30, 0.8);
+  color: #f3e5ab;
+  border: 1px solid #cd7f32;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: #cd7f32;
+  color: black;
+}
+
+.btn-scavenge, .btn-rest, .btn-douse {
+  border: 1px solid #cd7f32;
+  font-family: 'Georgia', serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Hazard Meter */
+.hazard-container {
+  width: 100%;
+  height: 20px;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  margin: 10px 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.hazard-fill {
+  height: 100%;
+  transition: width 0.5s ease-in-out, background-color 0.5s ease;
+}
+
+.hazard-value {
+  text-align: right;
+  font-size: 0.9rem;
+  color: #ff4500;
+}
+
+/* ANIMATIONS */
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.heat-meter.danger {
+  color: #ff4500;
+  text-shadow: 0 0 10px #8b0000;
+  animation: flicker 1.5s infinite;
 }

@@ -38,3 +38,37 @@
   border: 2px dashed #cd7f32;
   opacity: 0.7;
 }
+
+.btn-delete-char {
+  background: #4a0000;
+  color: #d4af37; /* Kyoto Gold */
+  border: 1px solid #d4af37;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+.btn-delete-char:hover {
+  background: #ff4500;
+  color: white;
+}
+
+.delete-notification {
+  background-color: rgba(74, 0, 0, 0.9); /* Deep Red */
+  color: #d4af37; /* Gold */
+  border: 1px solid #d4af37;
+  padding: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-radius: 4px;
+  font-weight: bold;
+  /* Animation to make it grab attention */
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
