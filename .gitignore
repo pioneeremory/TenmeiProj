@@ -1,0 +1,39 @@
+# Security: Sensitive Python Environment Variables
+kyoto_proj/.env 
+kyoto_proj/.env.development
+kyoto_proj/.env.production
+kyoto_proj/.env.test
+kyoto_proj/.env*.local # (redundant if you have *.local, but good for clarity)
+
+# Django specifics
+kyoto_proj/__pycache__/
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+.python-version
+poetry.lock  # if you use Poetry
+pip-wheel-metadata/
+
+# Logs
+*.log
+*.sqlite3-journal
+
+# Logs
+logs
+*.log
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
