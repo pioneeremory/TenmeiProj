@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getSessions, getCharacters, performGameAction, endCycle } from "../api/authApi";
@@ -135,36 +136,42 @@ function GameDashboard() {
           <div className="history-log" ref={scrollRef}>
             {latestNarration && <ReactMarkdown>{session.story_log}</ReactMarkdown>}
           </div>
-<div className="active-narration">
+        <div className="active-narration">
 
-  {session.segments_left === 0 && session.grit > 0 ? (
-    <div className="cycle-recap">
-      <h3 className="recap-title">Evening in the Ruins</h3>
-      <p>The smoke thickens as night falls. You reflect on your deeds:</p>
-      <div className="recap-list">
-        {session.daily_actions_buffer?.map((item, idx) => (
-          <div key={idx} className="recap-item" style={{ marginBottom: '10px' }}>
-            <strong>{item.action}:</strong> {item.summary}
-          </div>
-        ))}
-      </div>
-    </div>
-  ) : (
+          {session.segments_left === 0 && session.grit > 0 ? (
+            <div className="cycle-recap">
+              <h3 className="recap-title">Evening in the Ruins</h3>
+              <p>The smoke thickens as night falls. You reflect on your deeds:</p>
+              <div className="recap-list">
+                {session.daily_actions_buffer?.map((item, idx) => (
+                  <div key={idx} className="recap-item" style={{ marginBottom: '10px' }}>
+                    <strong>{item.action}:</strong> {item.summary}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
 
-    <div className="latest-entry">
-      {latestNarration ? (
-        <Typewriter text={latestNarration} key={latestNarration} speed={25} />
-      ) : (
-
-        <div className="prologue-text">
-          <ReactMarkdown>
-            {session.story_log.split('\n\n').pop()}
-          </ReactMarkdown>
+        <div className="latest-entry">
+              {latestNarration ? (
+                /* The Typewriter displays the immediate AI response from handleAction */
+                <Typewriter text={latestNarration} key={latestNarration} speed={25} />
+              ) : session.current_cycle === 1 && session.segments_left === 3 ? (
+                /* 🚨 THE FIX: If it is the start of Day 1, render the FULL story_log */
+                <div className="prologue-text">
+                  <ReactMarkdown>{session.story_log}</ReactMarkdown>
+                </div>
+              ) : (
+                /* Otherwise, use the fallback: only show the *last* AI entry */
+                <div className="fallback-text">
+                  <ReactMarkdown>
+                    {session.story_log.split('\n\n').pop()}
+                  </ReactMarkdown>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  )}
-</div>
         </div>
 
         <div className="action-bar">
