@@ -2,6 +2,13 @@ from django.db import models
 from django.conf import settings
 import random
 
+KYOTO_REGIONS = {
+    "palace_gates": {"name": "Gosho Palace Gates", "fire_threshold": 100}, # Always unlocked
+    "kamo_river": {"name": "Kamo River Bank", "fire_threshold": 80},     # Unlocks when Fire < 80
+    "shijo_street": {"name": "Shijo Street Market", "fire_threshold": 50},  # Unlocks when Fire < 50
+    "teramachi": {"name": "Teramachi Temple District", "fire_threshold": 30}, # Unlocks when Fire < 30
+}
+
 class MainCharacter(models.Model):
     # 'user' (below) is a foreign key to the User model in Django's built-in authentication system
     user = models.ForeignKey(
@@ -15,11 +22,13 @@ class MainCharacter(models.Model):
     def __str__(self):
         return self.name
 
+
 class GameSession(models.Model):
     character = models.ForeignKey(MainCharacter, on_delete=models.CASCADE, related_name="game_sessions")
     grit = models.IntegerField(default=100)
     rice = models.IntegerField(default=5)
     current_cycle = models.IntegerField(default=1)
+    daily_actions_buffer = models.JSONField(default=list) #added to allow for summaries after each cycle
     
     # THE MEMORY: Stores the full story history as a string
     story_log = models.TextField(default="The journey begins in the ashes of Kyoto...")
@@ -27,8 +36,12 @@ class GameSession(models.Model):
     # THE THREAT: Scales the AI's difficulty and descriptions
     fire_danger = models.IntegerField(default=10)
     segments_left = models.IntegerField(default=3) # 3 actions per day
+    current_region = models.CharField(max_length=50, default="palace_gates")
     def __str__(self):
         return f"{self.character.name} - Cycle {self.current_cycle}"
+    def get_available_regions(self):
+        # Only return regions where the fire_threshold is NOT met (i.e., lower than current fire)
+        return [r for r, data in KYOTO_REGIONS.items() if self.fire_danger < data["fire_threshold"]]
 
     def roll_dice(self, difficulty: int) -> bool: # this method will be called by the view to update the session's dice rolls and return a boolean value of whether or not the character passes
         roll = random.randint(1,6)
@@ -37,17 +50,21 @@ class GameSession(models.Model):
     def perform_action(self, action_type):
         """Processes one of the 3 daily segments."""
         if self.segments_left <= 0:
-            return "No segments left for today."
+            return "Exhausted! You have no more actions left today."
 
         self.segments_left -= 1
         summary = ""
+        region_id = self.current_region
+        region_metadata = KYOTO_REGIONS.get(region_id, {})
+        current_region_name = region_metadata.get("name", "Unknown Area")
 
         if action_type == "SCAVENGE":
             # High reward, high risk to Grit (Health)
             found_rice = random.randint(1, 3)
             grit_loss = random.randint(5, 15)
             self.rice += found_rice
-            self.grit -= grit_loss
+            # self.grit -= grit_loss (changed this because it was going negative!)
+            self.grit = max(-100, self.grit - grit_loss)
             summary = f"Scavenged {found_rice} rice but lost {grit_loss} Grit to the heat."
 
         elif action_type == "DOUSE":
@@ -69,8 +86,15 @@ class GameSession(models.Model):
         # Every action makes the fire grow slightly
         self.fire_danger += random.randint(2, 5)
         
-        if self.segments_left == 0:
-            self.resolve_day_end()
+        # if self.segments_left == 0:
+            # self.resolve_day_end()
+
+        self.daily_actions_buffer.append({
+            "segment": 3 - self.segments_left, # 1, 2, or 3
+            "action": action_type,
+            "region": current_region_name,
+            "summary": summary
+        })
             
         self.save()
         return summary
@@ -81,4 +105,6 @@ class GameSession(models.Model):
         self.segments_left = 3
         # The fire rages at night
         self.fire_danger += 10 
+        self.daily_actions_buffer = []
         self.save()
+        return f"Day {self.current_cycle} begins. The smoke is thick over Kyoto."

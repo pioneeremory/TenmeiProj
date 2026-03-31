@@ -1,5 +1,6 @@
 # core_app/services.py
 import requests
+from .models import KYOTO_REGIONS
 
 class StoryService:
     @staticmethod
@@ -20,6 +21,7 @@ class StoryService:
             f"Then, explain the rules of this hell: Rice is your lifeblood, Grit is your physical and mental. make the words 'Rice', 'Grit', and 'Fire Hazard' bold and italics.\n\n"
             f"will to survive, and the Fire Hazard is the wrath of the gods that will consume everything if ignored. "
             f"Style: Historical, atmospheric, and captivating."
+            f"STYLE RULE: Explain the game mechanics within the story: **Rice** is your lifeblood, **Grit** is your will to survive, and the **Fire Hazard** will consume everything. You MUST use bold markdown (e.g., **Rice**) for these three key terms."
         )
 
         try:
@@ -38,6 +40,13 @@ class StoryService:
         # 1. Configuration (Bridge to your 7900 XTX)
         AI_SERVICE_URL = "http://127.0.0.1:8001/generate" 
         API_KEY = "secretkey" 
+
+        region_id = session.current_region
+        region_metadata = KYOTO_REGIONS.get(region_id, {})
+        current_region_name = region_metadata.get("name", "an Unknown Area")
+
+        # We can also add a brief "description" for the AI to provide context.
+        region_ai_description = f"This is an unlocked area where the fire threshold is {region_metadata.get('fire_threshold')}%."
         
         # 2. Contextual Memory (Preserve the last 500 characters of the story)
         context = session.story_log[-500:] if session.story_log else "The journey begins in the ashes."
@@ -47,10 +56,11 @@ class StoryService:
         prompt = (
             f"Context: {context}\n"
             f"Setting: 1788 Kyoto Great Fire. Style: Dark Historical LitRPG.\n"
+            f"Current Location: {current_region_name} (Status: {region_ai_description}).\n"
             f"Character: {session.character.name} (Grit: {session.grit}, Rice: {session.rice}, Fire Danger: {session.fire_danger}%).\n"
             f"Action Taken: {action_type}.\n"
             f"Outcome: {summary}.\n"
-            f"Requirement: Write exactly 2 sentences of sensory, grim narration. Stay in the 1788 timeline."
+            f"Requirement: Write exactly 2 sentences of sensory, grim narration. Stay in the 1788 timeline. Don't repeat yourself."
         )
 
         try:

@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Security: Sensitive Environment Variables
+.env
+.env.development
+.env.production
+.env.test
+.env*.local # (redundant if you have *.local, but good for clarity)

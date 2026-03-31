@@ -102,6 +102,21 @@
   color: #d4af37 !important;
   background: transparent !important;
   background-color: transparent !important;
+  line-height: 1.8;
+  letter-spacing: 0.02rem;
+  text-align: justify;
+}
+
+/* This targets the paragraphs created by ReactMarkdown */
+.prologue-text p, .latest-entry p {
+  margin-bottom: 20px; /* Creates actual gaps between story beats */
+}
+
+/* This makes the bolded words (Grit, Rice) pop with a slight glow */
+.prologue-text strong, .latest-entry strong {
+  color: #fff; 
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  font-weight: bold;
 }
 
 /* 5. INTERACTIVE ELEMENTS (Buttons & Hazards) */

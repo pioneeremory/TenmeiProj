@@ -143,3 +143,19 @@ export const performGameAction = async (token, sessionId, actionType) => {
     return null;
   }
 };
+
+export const endCycle = async (token, sessionId) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/end_day/`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Token ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return await response.json();
+  } catch (err) {
+    console.error("API Error (endCycle):", err);
+    return null;
+  }
+};

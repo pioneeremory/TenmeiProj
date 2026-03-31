@@ -9,6 +9,8 @@ from .models import MainCharacter, GameSession
 from .serializers import MainCharacterSerializer, GameSessionSerializer
 from .services import StoryService
 
+
+# I need to check if this is secure
 class GameSessionViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication] 
     permission_classes = [IsAuthenticated]
@@ -30,10 +32,25 @@ class GameSessionViewSet(viewsets.ModelViewSet):
 
         # 2. Check for Game Over
         if session.grit <= 0:
-            narration = "The heat becomes a weight you can no longer carry. Your vision fades into a wall of orange flame."
-            session.story_log += f"\n\nGAME OVER: {narration}"
+            failure_reason = "The smoke filled your lungs until there was no room left for air."
+            if action_type == "REST" and session.rice <= 0:
+                failure_reason = "You closed your eyes to rest, but with an empty stomach, your body simply lacked the strength to wake up again."
+            elif action_type == "SCAVENGE":
+                failure_reason = "In your desperation for supplies, you ventured too deep into the inferno. The heat was unforgiving."
+            elif action_type == "DOUSE":
+                failure_reason = "You fought the flames until your hands blistered and your spirit broke. The fire has won this day."
+
+            session.story_log += f"\n\nGAME OVER: {failure_reason}"
             session.save()
-            return Response({"status": "DEAD", "narration": narration}, status=200)
+            return Response({
+                "status": "DEAD", 
+                "narration": failure_reason,
+                "failure_reason": failure_reason,
+                "grit": session.grit,
+                "rice": session.rice,
+                "fire_danger": session.fire_danger,
+                "story_log": session.story_log
+            }, status=200)
 
         # 3. AI Logic: Generate narration based on the new world state
         # We pass the summary of what happened (e.g., "Scavenged 2 rice") to the AI
@@ -53,7 +70,24 @@ class GameSessionViewSet(viewsets.ModelViewSet):
             "fire_danger": session.fire_danger,
             "segments_left": session.segments_left,
             "current_cycle": session.current_cycle,
-            "story_log": session.story_log
+            "story_log": session.story_log,
+            "daily_actions_buffer":session.daily_actions_buffer
+        })
+    @action(detail=True, methods=['post'])
+    def end_day(self, request, pk=None):
+        session = self.get_object()
+        
+        if session.segments_left > 0:
+            return Response({"error": "The sun hasn't set yet."}, status=400)
+
+        # Call the logic to reset segments and increment day
+        session.resolve_day_end() 
+        
+        return Response({
+            "status": "Day Ended",
+            "current_cycle": session.current_cycle,
+            "segments_left": session.segments_left,
+            "daily_actions_buffer": [] # Cleared for the new day
         })
 
     # @action(detail=True, methods=['post'])
@@ -87,26 +121,27 @@ class GameSessionViewSet(viewsets.ModelViewSet):
     #         "grit": session.grit
     #     })
 
-    @action(detail=True, methods=['post'])
-    def rest(self, request, pk=None):
-        session = self.get_object()
-        session.grit += 1
-        session.rice -= 1
-        session.current_cycle += 1
-        session.save()
-        return Response({
-            "status": "Rested", 
-            "grit": session.grit, 
-            "rice": session.rice,
-            "current_cycle": session.current_cycle
-        })
+    # @action(detail=True, methods=['post'])
+    # def rest(self, request, pk=None):
+    #     session = self.get_object()
+    #     session.grit += 1
+    #     session.rice -= 1
+    #     session.current_cycle += 1
+    #     session.save()
+    #     return Response({
+    #         "status": "Rested", 
+    #         "grit": session.grit, 
+    #         "rice": session.rice,
+    #         "current_cycle": session.current_cycle
+    #     })
 
 class AllCharacters(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        characters = MainCharacter.objects.order_by("name")
+        # characters = MainCharacter.objects.order_by("name")
+        characters = MainCharacter.objects.filter(user=request.user).order_by("name")
         serializer = MainCharacterSerializer(characters, many=True)
         return Response(serializer.data)
 
