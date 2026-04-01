@@ -68,6 +68,7 @@ function GameDashboard() {
         
         setSession((prev) => ({
           ...prev, 
+          ...data,
           rice: data.rice,
           grit: data.grit,
           fire_danger: data.fire_danger,
@@ -168,6 +169,17 @@ function GameDashboard() {
         <div className="stat-row">🕯️ Grit: {Math.max(0, session.grit)}</div>
         <div className="stat-row">⏳ Day: {session.current_cycle}</div>
         <div className="stat-row">🕒 Segments: {session.segments_left}/3</div>
+        <hr className="bronze-divider" />
+        <div className="inventory-section">
+          <h4>Inventory</h4>
+          {session.has_monastery_key ? (
+            <div className="inventory-item tooltipped" title="Unlocks Shokokuji Sanctuary">
+              🗝️ Iron Key (Shokokuji)
+            </div>
+          ) : (
+            <div className="inventory-empty">No rare items...</div>
+          )}
+        </div>
       </aside>
 
       <main className="story-engine">

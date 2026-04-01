@@ -37,6 +37,8 @@ class GameSession(models.Model):
     met_fox = models.BooleanField(default=False)
     pending_event = models.JSONField(null=True, blank=True) 
 
+    has_monastery_key = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"{self.character.name} - Cycle {self.current_cycle}"

@@ -108,9 +108,29 @@ class GameSessionViewSet(viewsets.ModelViewSet):
             if choice == "GIVE_RICE":
                 session.rice -= 1
                 session.monk_rice_donated += 1
-                result_text = "You handed over the rice. The monk bowed deeply."
+                if session.monk_rice_donated >= 3:
+                    session.has_monastery_key = True
+                    result_text = ("The monk gasps as you hand over the grain. 'You have saved our history. "
+                    "The Shokokuji Temple is now open to you as a sanctuary!'")
+                else: 
+                    result_text = "You handed over the rice. The monk bowed deeply."
             else:
                 result_text = "You turned away. The monk's sigh was lost in the wind."
+        elif event_id == "FOX_BARGAIN":
+            if choice == "ACCEPT_FOX":
+                if session.rice >= 5:
+                    session.rice -= 5
+                    session.fire_danger = session.fire_danger - 30
+                    result_text = ("The woman laughs, a sound like silver   bells. She exhales a cold mist "
+                                   "that chills the air and suppresses the roaring flames nearby.")
+                else:
+                    result_text = "You reached for rice that wasn't there. The woman vanished in a puff of sulfur."
+            
+            elif choice == "REFUSE_FOX":
+                session.grit -= 20
+                session.fire_danger += 50
+                result_text = ("Her smile turns sharp. 'Then burn with the rest of them.' A wave of "
+                               "unnatural heat washes over you, searing your lungs.")
 
         # LOGIC FOR RESOLVING THE WARRIOR TAX
         elif event_id == "WARRIOR_TAX":
