@@ -19,6 +19,7 @@ function GameDashboard() {
   const [character, setCharacter] = useState(null);
   const [loading, setLoading] = useState(true);
   const [latestNarration, setLatestNarration] = useState("");
+  const [activeEvent, setActiveEvent] = useState(null);
 
 
   useEffect(() => {
@@ -26,10 +27,15 @@ function GameDashboard() {
       const token = localStorage.getItem("userToken");
       try {
         const allSessions = await getSessions(token);
-        const currentSession = allSessions.find(s => s.id === parseInt(sessionId));
-        setSession(currentSession);
+        // console.log("All Sessions from API:", allSessions);
+        // console.log("Session ID from URL:", sessionId);
+        const currentSession = allSessions.find(s => String(s.id) === String(sessionId));
 
         if (currentSession) {
+          setSession(currentSession);
+        if (currentSession.pending_event) {
+          setActiveEvent(currentSession.pending_event);
+        }
           const allChars = await getCharacters(token);
           const currentChar = allChars.find(c => c.id === currentSession.character);
           setCharacter(currentChar);
@@ -44,6 +50,38 @@ function GameDashboard() {
     fetchGameData();
   }, [sessionId]);
 
+  const handleResolveEvent = async (choiceValue) => {
+    const token = localStorage.getItem("userToken");
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/resolve_event/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Token ${token}`,
+        },
+        body: JSON.stringify({ choice: choiceValue }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        
+        setSession((prev) => ({
+          ...prev, 
+          rice: data.rice,
+          grit: data.grit,
+          fire_danger: data.fire_danger,
+          story_log: data.story_log || prev.story_log,
+          pending_event: null,
+        }));
+        
+        setActiveEvent(null);
+        setLatestNarration(data.result_text);
+      }
+    } catch (err) {
+      console.error("Event Resolution Failed:", err);
+    }
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -94,10 +132,16 @@ function GameDashboard() {
           ...session,
           current_cycle: result.current_cycle,
           segments_left: result.segments_left,
+          fire_danger: result.fire_danger,
+          pending_event: result.event,
           daily_actions_buffer: [], // Clear local buffer for the new day
           status: "ACTIVE"
         });
-        setLatestNarration(`The sun rises on Day ${result.current_cycle}. Kyoto continues to burn.`);
+        if (result.event) {
+          setActiveEvent(result.event);
+        } else {
+          setLatestNarration(`The sun rises on Day ${result.current_cycle}. Kyoto continues to burn.`);
+        }
       }
     } catch (err) {
       console.error("Failed to end day:", err);
@@ -165,7 +209,7 @@ function GameDashboard() {
                 /* Otherwise, use the fallback: only show the *last* AI entry */
                 <div className="fallback-text">
                   <ReactMarkdown>
-                    {session.story_log.split('\n\n').pop()}
+                    {session?.story_log ? session.story_log.split('\n\n').pop() : "The embers glow in the silence..."}
                   </ReactMarkdown>
                 </div>
               )}
@@ -184,6 +228,26 @@ function GameDashboard() {
                   Return to the Spirit World
                 </button>
               </div> 
+            ) : activeEvent ? (
+                /* 🏮 EVENT STATE (The Takeover) */
+                <div className="event-controls">
+                  <div className="event-info">
+                    <h3 className="event-title">{activeEvent.npc}: {activeEvent.title}</h3>
+                    <p className="event-description">{activeEvent.text}</p>
+                  </div>
+                  <div className="event-options">
+                    {activeEvent.options.map((opt, idx) => (
+                      <button
+                        key={idx}
+                        className="event-btn"
+                        disabled={opt.disabled}
+                        onClick={() => handleResolveEvent(opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
           ) : session.segments_left > 0 ? (
             <>
               <button onClick={() => handleAction("SCAVENGE")} className="btn-scavenge">Scavenge</button>

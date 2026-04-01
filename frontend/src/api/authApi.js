@@ -55,7 +55,6 @@ export async function getWines(token) {
   return body.result
 }
 
-// 2. Fetch all game sessions for the logged-in user
 export async function getSessions(token) {
   const payload = {
     method: "GET",
@@ -64,12 +63,10 @@ export async function getSessions(token) {
       "Authorization": `Token ${token}`
     }
   }
-  // The Router handles 'sessions/' automatically
   const body = await basicFetch("http://127.0.0.1:8000/api/sessions/", payload)
   return body
 }
 
-// 3. Create a new session (Start a new game)
 export async function createSession(token, sessionData) {
   const payload = {
     method: "POST",
@@ -113,17 +110,16 @@ export async function scavengeAction(token, sessionId) {
     method: "POST", // Your view specifies methods=['post']
     headers: { "Authorization": `Token ${token}` }
   };
-  // URL format: /api/sessions/{id}/scavenge/
+
   return await basicFetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/scavenge/`, payload);
 }
 
-// 3. Perform 'Rest' Action
+
 export async function restAction(token, sessionId) {
   const payload = {
     method: "POST",
     headers: { "Authorization": `Token ${token}` }
   };
-  // URL format: /api/sessions/{id}/rest/
   return await basicFetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/rest/`, payload);
 }
 
