@@ -12,9 +12,12 @@ class MainCharacter(models.Model):
         )
     name = models.CharField(max_length=15)
     is_male = models.BooleanField(default =True)
+    is_dead = models.BooleanField(default=False)
+    cause_of_death = models.CharField(max_length=255, blank= True, null=True)
 
     def __str__(self):
-        return self.name
+        status = " (Deceased)" if self.is_dead == True else ""
+        return f"{self.name}{status}"
 
 
 class GameSession(models.Model):
@@ -26,6 +29,7 @@ class GameSession(models.Model):
     
     
     story_log = models.TextField(default="The journey begins in the ashes of Kyoto...")
+    # is_generating = models.BooleanField(default=False)
     
     fire_danger = models.IntegerField(default=10)
     segments_left = models.IntegerField(default=3) # 3 actions per day
@@ -115,3 +119,12 @@ class GameSession(models.Model):
         self.daily_actions_buffer = []
         self.save()
         return f"Day {self.current_cycle} begins. The smoke is thick over Kyoto."
+
+    def mark_character_dead(self, reason):
+        char = self.character
+        char.is_dead = True
+        char.cause_of_death = reason
+        char.save()
+        
+        self.status = "DEAD" 
+        self.save()

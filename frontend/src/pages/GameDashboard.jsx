@@ -241,7 +241,6 @@ function GameDashboard() {
                 </button>
               </div> 
             ) : activeEvent ? (
-                /* 🏮 EVENT STATE (The Takeover) */
                 <div className="event-controls">
                   <div className="event-info">
                     <h3 className="event-title">{activeEvent.npc}: {activeEvent.title}</h3>
@@ -275,7 +274,6 @@ function GameDashboard() {
         </div>
       </main>
 
-      {/* COLUMN 3: Hazard Sidebar */}
       <aside className="hazard-sidebar">
         <h3>Fire Hazard</h3>
         <div className="hazard-container">

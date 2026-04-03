@@ -32,7 +32,22 @@ client = Client(host=f"http://{GATEWAY_IP}:11434")
 
 @app.post("/generate")
 
-def generate(prompt: str, x_api_key: str = Depends(verify_api_key)):
-    API_KEYS[x_api_key] -= 1 # OPTIONAL this removes api credits upon each request
-    response = ollama.chat(model="gpt-oss:20b", messages=[{"role": "user","content": prompt}])
+# def generate(prompt: str, x_api_key: str = Depends(verify_api_key)):
+#     API_KEYS[x_api_key] -= 1 # OPTIONAL this removes api credits upon each request
+#     response = ollama.chat(model="gpt-oss:20b", messages=[{"role": "user","content": prompt}])
+#     return {"response": response["message"]["content"]}
+@app.post("/generate")
+def generate(request: dict, x_api_key: str = Depends(verify_api_key)):
+    # 🚨 FIX 1: Access 'prompt' from the JSON body (request dict)
+    prompt = request.get("prompt")
+    
+    API_KEYS[x_api_key] -= 1 
+
+    # 🚨 FIX 2: Use the 'client' variable, NOT the global 'ollama'
+    # 🚨 FIX 3: Changed model to 'llama3.1' for better performance
+    response = client.chat(
+        model="llama3.1", 
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
     return {"response": response["message"]["content"]}

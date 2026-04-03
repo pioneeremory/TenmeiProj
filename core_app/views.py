@@ -26,12 +26,9 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         if not action_type:
             return Response({"error": "No action type provided"}, status=400)
 
-        # 1. Execute Game Logic via the Model
-        # This updates Grit (Health), Rice, Danger, and segments_left
         summary = session.perform_action(action_type)
 
-        # 2. Check for Game Over
-        if session.grit <= 0 or session.fire_danger >= 100:
+        if session.grit <= 0 or session.fire_danger >= 100 or session.rice <= 0:
             failure_reason = "The smoke filled your lungs until there was no room left for air."
             if action_type == "REST" and session.rice <= 0:
                 failure_reason = "You closed your eyes to rest, but with an empty stomach, your body simply lacked the strength to wake up again."
@@ -40,25 +37,24 @@ class GameSessionViewSet(viewsets.ModelViewSet):
             elif action_type == "DOUSE":
                 failure_reason = "You fought the flames until your hands blistered and your spirit broke. The fire has won this day."
 
+            session.mark_character_dead(failure_reason)
             session.story_log += f"\n\nGAME OVER: {failure_reason}"
             session.save()
             return Response({
                 "status": "DEAD", 
                 "narration": failure_reason,
                 "failure_reason": failure_reason,
+                "is_dead": True,
                 "grit": session.grit,
                 "rice": session.rice,
                 "fire_danger": session.fire_danger,
                 "story_log": session.story_log
             }, status=200)
 
-        # 3. AI Logic: Generate narration based on the new world state
-        # We pass the summary of what happened (e.g., "Scavenged 2 rice") to the AI
         new_narration = StoryService.generate_narration(
             session, action_type, summary
         )
 
-        # 4. Persistence
         session.story_log += f"\n\nDay {session.current_cycle}: {new_narration}"
         session.save()
 
@@ -80,7 +76,6 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         if session.segments_left > 0:
             return Response({"error": "The sun hasn't set yet."}, status=400)
 
-        # Call the logic to reset segments and increment day
         session.resolve_day_end() 
         
         return Response({
@@ -218,7 +213,6 @@ class AllCharacters(APIView):
         serializer = MainCharacterSerializer(data=request.data)
         if serializer.is_valid():
             character = serializer.save(user=request.user)
-            # Create session automatically
             session, created = GameSession.objects.get_or_create(
                 character=character,
                 defaults={

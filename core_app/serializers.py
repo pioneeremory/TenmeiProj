@@ -4,7 +4,7 @@ from .models import MainCharacter, GameSession
 class MainCharacterSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainCharacter
-        fields = ['id', 'name', 'is_male']
+        fields = ['id', 'name', 'is_male', 'is_dead', 'cause_of_death']
 
 class GameSessionSerializer(serializers.ModelSerializer):
     class Meta:
