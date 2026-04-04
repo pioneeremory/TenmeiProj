@@ -82,22 +82,33 @@ function SelectCharacter() {
           {characters.map((char) => (
             <div 
               key={char.id} 
-              className="char-card" 
-              onClick={() => handleSelect(char.id)} 
-              style={{ border: '1px solid #cd7f32', padding: '15px', cursor: 'pointer', position: 'relative' }}
+              className={`char-card ${char.is_dead ? "deceased" : ""}`}
+              onClick={() => !char.is_dead && handleSelect(char.id)} 
+              style={{ border: char.is_dead ? '1px solid #444' : '1px solid #cd7f32', padding: '15px', cursor: char.is_dead ? 'default' : 'pointer', position: 'relative', opacity: char.is_dead ? 0.7 : 1,background: char.is_dead ? 'rgba(0,0,0,0.4)' : 'transparent'}}
             >
-              <h3>{char.name}</h3>
+              <h3>{char.name} {char.is_dead && "💀"}</h3>
+              {char.is_dead ? (
+              <div style={{ color: '#8b0000', fontStyle: 'italic', marginBottom: '10px' }}>
+                <strong>JOURNEY ENDED:</strong> {char.cause_of_death || "Consumed by the embers."}
+              </div>
+            ) : (
               <p>{char.bio || "A soul wandering the embers of Kyoto."}</p>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {!char.is_dead && (
+                <span style={{ fontSize: '0.8rem', color: '#cd7f32' }}>Click to Continue →</span>
+              )}
               <button 
                 className="btn-delete-char" 
                 onClick={(e) => handleDelete(e, char.id)}
                 style={{ background: 'transparent', color: '#ff4500', border: '1px solid #ff4500', cursor: 'pointer', marginTop: '10px' }}
               >
-                Delete
-              </button>
+                {char.is_dead ? "Exorcise Soul" : "Delete"}
+                </button>
+                </div>
+              </div>
+              ))}
             </div>
-          ))}
-        </div>
         
         <button 
           className="btn-submit" 

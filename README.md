@@ -40,8 +40,10 @@ Starting the dev app:
 
 # TO DO LIST
 
-- MAJOR change, add a world state that recalls the user choices, where they are at in the story, and serves consequences via AI
-- The summary of outcomes should appear on the FE after each cycle (not action)
+x MAJOR change, add a world state that recalls the user choices, where they are at in the story, and serves consequences via AI
+
+- Add WIN state, or end game sequences based on challenges or survival (30 cycles + fire intensity determines the degree of success?)
+  x The summary of outcomes should appear on the FE after each cycle (not action)
 - Add longer format cut scenes to break up the repetitive gameplay?
 - Actions that acknowledge the struggles surrounding the user, sometimes with no good choice (feed your starving sibling)
 - Add more acknowledgements to the end of each cycle/ cost of actions
@@ -50,6 +52,12 @@ Starting the dev app:
 - Paginate the character select screen
 - Style the logout screen
   x Logged in user should only see the characters they own (not all)
+- Add a root page
+- Add an encounter system to curate the story a bit and break up the repetitive AI-driven narrative (Fixed cycle and special events)
+- Make quest rewards more meaningful (Monk new location)
+- Add more content and events based on the sibling's health and status
+  x Visualize the death condition in the character selection screen
+- Add Camp visual for summary screens (0/3 segments remain)
 
 How can I use my AI API in order to not just deliver story text when a user takes an action, but also to ask questions or to make their choice feel like it has more weight? Right now it feels cheap when you click the buttons, although the consequences are there. For instance, clicking scavenge might get you some rice, but cost grit (health) AND allow the fire to rage, unchecked.
 

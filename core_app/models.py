@@ -1,13 +1,7 @@
 from django.db import models
 from django.conf import settings
 import random
-
-KYOTO_REGIONS = {
-    "palace_gates": {"name": "Gosho Palace Gates", "fire_threshold": 100}, # Always unlocked
-    "kamo_river": {"name": "Kamo River Bank", "fire_threshold": 80},     # Unlocks when Fire < 80
-    "shijo_street": {"name": "Shijo Street Market", "fire_threshold": 50},  # Unlocks when Fire < 50
-    "teramachi": {"name": "Teramachi Temple District", "fire_threshold": 30}, # Unlocks when Fire < 30
-}
+from .regions import KYOTO_REGIONS
 
 class MainCharacter(models.Model):
     # 'user' (below) is a foreign key to the User model in Django's built-in authentication system
@@ -18,9 +12,12 @@ class MainCharacter(models.Model):
         )
     name = models.CharField(max_length=15)
     is_male = models.BooleanField(default =True)
+    is_dead = models.BooleanField(default=False)
+    cause_of_death = models.CharField(max_length=255, blank= True, null=True)
 
     def __str__(self):
-        return self.name
+        status = " (Deceased)" if self.is_dead == True else ""
+        return f"{self.name}{status}"
 
 
 class GameSession(models.Model):
@@ -30,13 +27,23 @@ class GameSession(models.Model):
     current_cycle = models.IntegerField(default=1)
     daily_actions_buffer = models.JSONField(default=list) #added to allow for summaries after each cycle
     
-    # THE MEMORY: Stores the full story history as a string
-    story_log = models.TextField(default="The journey begins in the ashes of Kyoto...")
     
-    # THE THREAT: Scales the AI's difficulty and descriptions
+    story_log = models.TextField(default="The journey begins in the ashes of Kyoto...")
+    # is_generating = models.BooleanField(default=False)
+    
     fire_danger = models.IntegerField(default=10)
     segments_left = models.IntegerField(default=3) # 3 actions per day
     current_region = models.CharField(max_length=50, default="palace_gates")
+    
+    status = models.CharField(max_length=20, default="ACTIVE") 
+    monk_encounters = models.IntegerField(default=0)
+    monk_rice_donated = models.IntegerField(default=0)
+    met_fox = models.BooleanField(default=False)
+    pending_event = models.JSONField(null=True, blank=True) 
+
+    has_monastery_key = models.BooleanField(default=False)
+
+
     def __str__(self):
         return f"{self.character.name} - Cycle {self.current_cycle}"
     def get_available_regions(self):
@@ -47,6 +54,7 @@ class GameSession(models.Model):
         roll = random.randint(1,6)
         total_roll = roll + self.grit
         return roll, total_roll >= difficulty
+        
     def perform_action(self, action_type):
         """Processes one of the 3 daily segments."""
         if self.segments_left <= 0:
@@ -100,11 +108,23 @@ class GameSession(models.Model):
         return summary
 
     def resolve_day_end(self):
-        """Triggered after the 3rd segment."""
+        from .services import EncounterService
         self.current_cycle += 1
         self.segments_left = 3
-        # The fire rages at night
+
+        new_event = EncounterService.check_for_encounter(self)
+        self.pending_event = new_event
+
         self.fire_danger += 10 
         self.daily_actions_buffer = []
         self.save()
         return f"Day {self.current_cycle} begins. The smoke is thick over Kyoto."
+
+    def mark_character_dead(self, reason):
+        char = self.character
+        char.is_dead = True
+        char.cause_of_death = reason
+        char.save()
+        
+        self.status = "DEAD" 
+        self.save()

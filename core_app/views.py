@@ -26,12 +26,9 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         if not action_type:
             return Response({"error": "No action type provided"}, status=400)
 
-        # 1. Execute Game Logic via the Model
-        # This updates Grit (Health), Rice, Danger, and segments_left
         summary = session.perform_action(action_type)
 
-        # 2. Check for Game Over
-        if session.grit <= 0:
+        if session.grit <= 0 or session.fire_danger >= 100 or session.rice <= 0:
             failure_reason = "The smoke filled your lungs until there was no room left for air."
             if action_type == "REST" and session.rice <= 0:
                 failure_reason = "You closed your eyes to rest, but with an empty stomach, your body simply lacked the strength to wake up again."
@@ -40,25 +37,24 @@ class GameSessionViewSet(viewsets.ModelViewSet):
             elif action_type == "DOUSE":
                 failure_reason = "You fought the flames until your hands blistered and your spirit broke. The fire has won this day."
 
+            session.mark_character_dead(failure_reason)
             session.story_log += f"\n\nGAME OVER: {failure_reason}"
             session.save()
             return Response({
                 "status": "DEAD", 
                 "narration": failure_reason,
                 "failure_reason": failure_reason,
+                "is_dead": True,
                 "grit": session.grit,
                 "rice": session.rice,
                 "fire_danger": session.fire_danger,
                 "story_log": session.story_log
             }, status=200)
 
-        # 3. AI Logic: Generate narration based on the new world state
-        # We pass the summary of what happened (e.g., "Scavenged 2 rice") to the AI
         new_narration = StoryService.generate_narration(
             session, action_type, summary
         )
 
-        # 4. Persistence
         session.story_log += f"\n\nDay {session.current_cycle}: {new_narration}"
         session.save()
 
@@ -80,14 +76,82 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         if session.segments_left > 0:
             return Response({"error": "The sun hasn't set yet."}, status=400)
 
-        # Call the logic to reset segments and increment day
         session.resolve_day_end() 
         
         return Response({
             "status": "Day Ended",
             "current_cycle": session.current_cycle,
             "segments_left": session.segments_left,
+            "fire_danger": session.fire_danger, # Added so the bar updates
+            "event": session.pending_event,
             "daily_actions_buffer": [] # Cleared for the new day
+        })
+    @action(detail=True, methods=['post'])
+    def resolve_event(self, request, pk=None):
+        session = self.get_object()
+        choice = request.data.get("choice")
+
+        # Defensive check
+        if not session.pending_event:
+            return Response({"error": "No pending event"}, status=400)
+
+        event_id = session.pending_event.get("id")
+        result_text = ""
+
+        # LOGIC FOR RESOLVING THE MONK
+        if event_id == "MONK_APPEARS":
+            if choice == "GIVE_RICE":
+                session.rice -= 1
+                session.monk_rice_donated += 1
+                if session.monk_rice_donated >= 3:
+                    session.has_monastery_key = True
+                    result_text = ("The monk gasps as you hand over the grain. 'You have saved our history. "
+                    "The Shokokuji Temple is now open to you as a sanctuary!'")
+                else: 
+                    result_text = "You handed over the rice. The monk bowed deeply."
+            else:
+                result_text = "You turned away. The monk's sigh was lost in the wind."
+        elif event_id == "FOX_BARGAIN":
+            if choice == "ACCEPT_FOX":
+                if session.rice >= 5:
+                    session.rice -= 5
+                    session.fire_danger = session.fire_danger - 30
+                    result_text = ("The woman laughs, a sound like silver   bells. She exhales a cold mist "
+                                   "that chills the air and suppresses the roaring flames nearby.")
+                else:
+                    result_text = "You reached for rice that wasn't there. The woman vanished in a puff of sulfur."
+            
+            elif choice == "REFUSE_FOX":
+                session.grit -= 20
+                session.fire_danger += 50
+                result_text = ("Her smile turns sharp. 'Then burn with the rest of them.' A wave of "
+                               "unnatural heat washes over you, searing your lungs.")
+
+        # LOGIC FOR RESOLVING THE WARRIOR TAX
+        elif event_id == "WARRIOR_TAX":
+            if choice == "PAY_TAX":
+                session.rice -= 2
+                result_text = "You paid the tribute. They let you pass."
+            else:
+                session.grit -= 20
+                result_text = "They struck you for your defiance. Your ribs ache."
+
+        # LOGIC FOR THE COMB
+        elif event_id == "BEAUTIFUL_COMB":
+            session.grit = min(100, session.grit + 10)
+            result_text = "The comb feels warm in your hand. You feel a surge of Grit."
+
+        # CLEAN UP
+        session.pending_event = None # Clear it so buttons disappear
+        session.story_log += f"\n\nENCOUNTER: {result_text}"
+        session.save()
+
+        return Response({
+            "result_text": result_text,
+            "rice": session.rice,
+            "grit": session.grit,
+            "fire_danger": session.fire_danger,
+            "story_log": session.story_log
         })
 
     # @action(detail=True, methods=['post'])
@@ -149,7 +213,6 @@ class AllCharacters(APIView):
         serializer = MainCharacterSerializer(data=request.data)
         if serializer.is_valid():
             character = serializer.save(user=request.user)
-            # Create session automatically
             session, created = GameSession.objects.get_or_create(
                 character=character,
                 defaults={
