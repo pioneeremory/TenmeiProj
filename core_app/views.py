@@ -151,6 +151,7 @@ class GameSessionViewSet(viewsets.ModelViewSet):
             "rice": session.rice,
             "grit": session.grit,
             "fire_danger": session.fire_danger,
+            "has_monastery_key": session.has_monastery_key,
             "story_log": session.story_log
         })
 

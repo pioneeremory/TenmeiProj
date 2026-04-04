@@ -73,6 +73,7 @@ function GameDashboard() {
           grit: data.grit,
           fire_danger: data.fire_danger,
           story_log: data.story_log || prev.story_log,
+          has_monastery_key: data.has_monastery_key ?? prev.has_monastery_key,
           pending_event: null,
         }));
         
