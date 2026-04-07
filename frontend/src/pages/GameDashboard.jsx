@@ -1,7 +1,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getSessions, getCharacters, performGameAction, endCycle } from "../api/authApi";
+import { getSessions, getCharacters, performGameAction, endCycle, resolveEvent } from "../api/authApi";
 import "../styles/GameDashboard.css";
 import ReactMarkdown from 'react-markdown';
 import Typewriter from "../components/Typewriter";
@@ -51,40 +51,67 @@ function GameDashboard() {
   }, [sessionId]);
 
   const handleResolveEvent = async (choiceValue) => {
-    const token = localStorage.getItem("userToken");
-    try {
-      const response = await fetch(`/api/sessions/${sessionId}/resolve_event/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Token ${token}`,
-        },
-        body: JSON.stringify({ choice: choiceValue }),
-      });
+  const token = localStorage.getItem("userToken");
+  try {
+    // 🎯 Use the centralized function from authApi.js
+    const data = await resolveEvent(token, sessionId, choiceValue);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        
-        setSession((prev) => ({
-          ...prev, 
-          ...data,
-          rice: data.rice,
-          grit: data.grit,
-          fire_danger: data.fire_danger,
-          story_log: data.story_log || prev.story_log,
-          has_monastery_key: data.has_monastery_key ?? prev.has_monastery_key,
-          has_comb: data.has_comb ?? prev.has_comb,
-          pending_event: null,
-        }));
-        
-        setActiveEvent(null);
-        setLatestNarration(data.result_text);
-      }
-    } catch (err) {
-      console.error("Event Resolution Failed:", err);
+    if (data) {
+      setSession((prev) => ({
+        ...prev, 
+        ...data,
+        rice: data.rice,
+        grit: data.grit,
+        fire_danger: data.fire_danger,
+        story_log: data.story_log || prev.story_log,
+        has_monastery_key: data.has_monastery_key ?? prev.has_monastery_key,
+        has_comb: data.has_comb ?? prev.has_comb,
+        pending_event: null,
+      }));
+      
+      setActiveEvent(null);
+      setLatestNarration(data.result_text);
     }
-  };
+  } catch (err) {
+    console.error("Event Resolution Failed:", err);
+  }
+};
+
+  // const handleResolveEvent = async (choiceValue) => {
+  //   const token = localStorage.getItem("userToken");
+  //   try {
+  //     const response = await fetch(`/api/sessions/${sessionId}/resolve_event/`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": `Token ${token}`,
+  //       },
+  //       body: JSON.stringify({ choice: choiceValue }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+        
+  //       setSession((prev) => ({
+  //         ...prev, 
+  //         ...data,
+  //         rice: data.rice,
+  //         grit: data.grit,
+  //         fire_danger: data.fire_danger,
+  //         story_log: data.story_log || prev.story_log,
+  //         has_monastery_key: data.has_monastery_key ?? prev.has_monastery_key,
+  //         has_comb: data.has_comb ?? prev.has_comb,
+  //         pending_event: null,
+  //       }));
+        
+  //       setActiveEvent(null);
+  //       setLatestNarration(data.result_text);
+  //     }
+  //   } catch (err) {
+  //     console.error("Event Resolution Failed:", err);
+  //   }
+  // };
 
   useEffect(() => {
     if (scrollRef.current) {

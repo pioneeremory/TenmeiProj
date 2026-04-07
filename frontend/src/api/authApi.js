@@ -1,7 +1,8 @@
-const BASE_URL = ''
+const BASE_URL = window.location.protocol + '//' + window.location.host;
 
 async function basicFetch(url, payload) {
-  const res = await fetch(url, payload)
+  const fullUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`;
+  const res = await fetch(fullUrl, payload)
   const body = await res.json()
   return body
 }
@@ -21,13 +22,11 @@ export async function signup(context) {
 
 export const deleteCharacter = async (token, charId) => {
   try {
-    const response = await fetch(`/api/characters/${charId}/`, {
+    const payload = {
       method: "DELETE",
-      headers: {
-        "Authorization": `Token ${token}`,
-      },
-    });
-    return response.ok;
+      headers: { "Authorization": `Token ${token}` },
+    };
+    return await basicFetch(`/api/characters/${charId}/`, payload);
   } catch (err) {
     console.error("Delete failed:", err);
     return false;
@@ -44,17 +43,6 @@ export async function login(context) {
   }
   const body = await basicFetch("/auth/get-token", payload)
   return body.token
-}
-
-export async function getWines(token) {
-  const payload = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Token ${token}`
-    }  }
-  const body = await basicFetch("http://localhost:8000/api/wines", payload)
-  return body.result
 }
 
 export async function getSessions(token) {
@@ -95,14 +83,14 @@ export async function createCharacter(token, characterData) {
 }
 
 export async function getCharacters(token) {
-  const res = await fetch("/api/characters/", {
+  const payload = {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Token ${token}` 
     }
-  });
-  return await res.json();
+  };
+  return await basicFetch("/api/characters/", payload);
 }
 
 // 2. Perform 'Scavenge' Action
@@ -127,15 +115,15 @@ export async function restAction(token, sessionId) {
 
 export const performGameAction = async (token, sessionId, actionType) => {
   try {
-    const response = await fetch(`/api/sessions/${sessionId}/take_action/`, {
+    const payload = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Token ${token}`,
       },
       body: JSON.stringify({ action_type: actionType }),
-    });
-    return await response.json();
+    };
+    return await basicFetch(`/api/sessions/${sessionId}/take_action/`, payload);
   } catch (err) {
     console.error("API Error:", err);
     return null;
@@ -144,16 +132,29 @@ export const performGameAction = async (token, sessionId, actionType) => {
 
 export const endCycle = async (token, sessionId) => {
   try {
-    const response = await fetch(`/api/sessions/${sessionId}/end_day/`, {
+    const payload = {
       method: "POST",
       headers: {
         "Authorization": `Token ${token}`,
         "Content-Type": "application/json",
       },
-    });
-    return await response.json();
+    };
+    return await basicFetch(`/api/sessions/${sessionId}/end_day/`, payload);
   } catch (err) {
     console.error("API Error (endCycle):", err);
     return null;
   }
+};
+
+export const resolveEvent = async (token, sessionId, choice) => {
+  const payload = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Token ${token}`, 
+    },
+    body: JSON.stringify({ choice: choice }),
+  };
+  
+  return await basicFetch(`/api/sessions/${sessionId}/resolve_event/`, payload);
 };
