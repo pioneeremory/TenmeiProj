@@ -10,8 +10,6 @@ import SelectCharacter from './pages/CharacterSelect'
 import GameDashboard from "./pages/GameDashboard";
 import LandingPage from "./pages/LandingPage";
 
-
-
 function App() {
 
   const [formData, setFormData] = useState({ username: '', password: '' });

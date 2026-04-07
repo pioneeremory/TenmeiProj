@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +20,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0^b64w^&ugh==0mg(8i_rw3e5*qlv5yq(+j5vet8w^2**ex3@k'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-key-for-local-dev-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = os.environ.get('DEBUG') == 'True'
+ALLOWED_HOSTS = ['api', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -61,6 +60,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost",
+    "http://127.0.0.1",
+]
+
 ROOT_URLCONF = 'kyoto_proj.urls'
 
 TEMPLATES = [
@@ -90,8 +94,8 @@ DATABASES = {
         "NAME": "kyoto_db",
         "USER": "postgres",
         "PASSWORD": "postgres",
-        "HOST": "localhost",  
-        "PORT": 5454, # This is the port on the host machine (which will be mapped to 5432 in the container)
+        "HOST": "db",  
+        "PORT": 5432, # This is the port on the host machine (which will be mapped to 5432 in the container)
     }
 }
 
@@ -139,4 +143,18 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated', # Standard
     ],
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
 }

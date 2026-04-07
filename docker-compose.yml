@@ -1,13 +1,41 @@
-version: "3"
 services:
+  api:
+    build:
+      context: .
+      dockerfile: ./kyoto_proj/Dockerfile
+    env_file: .env
+    environment:
+      - NARRATION_SERVICE_URL=http://narration:8001/generate
+    depends_on:
+      - db
+      - narration
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./webserver/Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+  narration:
+    build:
+      context: .
+      dockerfile: ./narration_service/Dockerfile
+    ports:
+      - "8001:8001"
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   db:
     image: postgres:15
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=kyoto_db
-    ports:
-      - "5454:5432"
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

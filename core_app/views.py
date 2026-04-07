@@ -91,14 +91,12 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         session = self.get_object()
         choice = request.data.get("choice")
 
-        # Defensive check
         if not session.pending_event:
             return Response({"error": "No pending event"}, status=400)
 
         event_id = session.pending_event.get("id")
         result_text = ""
 
-        # LOGIC FOR RESOLVING THE MONK
         if event_id == "MONK_APPEARS":
             if choice == "GIVE_RICE":
                 session.rice -= 1
@@ -127,7 +125,6 @@ class GameSessionViewSet(viewsets.ModelViewSet):
                 result_text = ("Her smile turns sharp. 'Then burn with the rest of them.' A wave of "
                                "unnatural heat washes over you, searing your lungs.")
 
-        # LOGIC FOR RESOLVING THE WARRIOR TAX
         elif event_id == "WARRIOR_TAX":
             if choice == "PAY_TAX":
                 session.rice -= 2
@@ -136,12 +133,11 @@ class GameSessionViewSet(viewsets.ModelViewSet):
                 session.grit -= 20
                 result_text = "They struck you for your defiance. Your ribs ache."
 
-        # LOGIC FOR THE COMB
         elif event_id == "BEAUTIFUL_COMB":
             session.grit = min(100, session.grit + 10)
+            session.has_comb = True
             result_text = "The comb feels warm in your hand. You feel a surge of Grit."
 
-        # CLEAN UP
         session.pending_event = None # Clear it so buttons disappear
         session.story_log += f"\n\nENCOUNTER: {result_text}"
         session.save()
@@ -152,6 +148,7 @@ class GameSessionViewSet(viewsets.ModelViewSet):
             "grit": session.grit,
             "fire_danger": session.fire_danger,
             "has_monastery_key": session.has_monastery_key,
+            "has_comb": session.has_comb,
             "story_log": session.story_log
         })
 
@@ -218,9 +215,9 @@ class AllCharacters(APIView):
                 character=character,
                 defaults={
                     'rice': 5, 
-                    'grit': 100,      # Start with Full Health!
+                    'grit': 100,      
                     'current_cycle': 1,
-                    'fire_danger': 10 # Initial small fire
+                    'fire_danger': 10 
                 }
             )
             # this is the prologue story
@@ -231,6 +228,12 @@ class AllCharacters(APIView):
 
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+    def update(self, request, *args, **kwargs):
+        character = self.get_object()
+        character.name = request.data.get('name', character.name)
+        character.save()
+        return Response({"message": "Name Updated", "name": character.name})
+
     def delete(self, request, pk=None):
         """Deletes a specific character and their associated session."""
         try:

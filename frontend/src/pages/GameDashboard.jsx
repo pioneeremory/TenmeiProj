@@ -53,7 +53,7 @@ function GameDashboard() {
   const handleResolveEvent = async (choiceValue) => {
     const token = localStorage.getItem("userToken");
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/resolve_event/`, {
+      const response = await fetch(`/api/sessions/${sessionId}/resolve_event/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,6 +74,7 @@ function GameDashboard() {
           fire_danger: data.fire_danger,
           story_log: data.story_log || prev.story_log,
           has_monastery_key: data.has_monastery_key ?? prev.has_monastery_key,
+          has_comb: data.has_comb ?? prev.has_comb,
           pending_event: null,
         }));
         
@@ -136,7 +137,7 @@ function GameDashboard() {
           segments_left: result.segments_left,
           fire_danger: result.fire_danger,
           pending_event: result.event,
-          daily_actions_buffer: [], // Clear local buffer for the new day
+          daily_actions_buffer: [], 
           status: "ACTIVE"
         });
         if (result.event) {
@@ -153,6 +154,26 @@ function GameDashboard() {
   if (loading) return <div className="auth-container"><h2>Loading Records...</h2></div>;
   if (!session) return <div className="auth-container"><h2>Session Lost in the Fire</h2></div>;
 
+  const handleRename = async () => {
+  const newName = prompt("Enter a new name for your survivor:", character.name);
+  if (!newName || newName === character.name) return;
+
+  const token = localStorage.getItem("userToken");
+  const response = await fetch(`/api/characters/${character.id}/`, {
+    method: "PUT", 
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Token ${token}`,
+    },
+    body: JSON.stringify({ name: newName }),
+  });
+
+  if (response.ok) {
+    const updatedChar = await response.json();
+    setCharacter(updatedChar);
+  }
+};
+
   return (
     <div className="dashboard-layout">
 
@@ -163,7 +184,10 @@ function GameDashboard() {
             alt="Portrait" 
             className="sidebar-portrait"
           />
-          <h3 className="character-name">{character?.name}</h3>
+          <h3 className="character-name">
+            {character?.name} 
+            <span className="edit-icon" onClick={handleRename} style={{cursor: 'pointer', fontSize: '0.8rem'}}> ✏️</span>
+          </h3>
         </div>
         <hr className="bronze-divider" />
         <div className="stat-row">🌾 Rice: {Math.max(0, session.rice)}</div>
@@ -173,11 +197,23 @@ function GameDashboard() {
         <hr className="bronze-divider" />
         <div className="inventory-section">
           <h4>Inventory</h4>
-          {session.has_monastery_key ? (
+          
+          {/* Shokokuji Key */}
+          {session.has_monastery_key && (
             <div className="inventory-item tooltipped" title="Unlocks Shokokuji Sanctuary">
               🗝️ Iron Key (Shokokuji)
             </div>
-          ) : (
+          )}
+
+          {/* Beautiful Comb */}
+          {session.has_comb && (
+            <div className="inventory-item tooltipped" title="A memento of elegance amidst the ash">
+              🪮 Lacquered Comb
+            </div>
+          )}
+
+          {/* Empty State Fallback */}
+          {!session.has_monastery_key && !session.has_comb && (
             <div className="inventory-empty">No rare items...</div>
           )}
         </div>

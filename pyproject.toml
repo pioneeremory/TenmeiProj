@@ -17,4 +17,5 @@ dependencies = [
     "ollama",
     "python-dotenv",
     "requests",
+    "gunicorn>=25.3.0",
 ]

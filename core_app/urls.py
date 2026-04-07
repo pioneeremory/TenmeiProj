@@ -9,6 +9,7 @@ router.register(r'sessions', GameSessionViewSet, basename='session')
 
 urlpatterns = [
     path('characters/', AllCharacters.as_view(), name='all_characters'),
+    path('characters/<int:pk>/', AllCharacters.as_view(), name='character_detail'),
     path('characters/<int:pk>/', AllCharacters.as_view(), name='delete_character'), 
     path('', include(router.urls)), 
 ]

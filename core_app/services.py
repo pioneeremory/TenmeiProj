@@ -1,4 +1,5 @@
 # core_app/services.py
+import os
 import requests
 import random
 from .regions import KYOTO_REGIONS
@@ -6,8 +7,9 @@ from .regions import KYOTO_REGIONS
 class StoryService:
     @staticmethod
     def generate_prologue(session):
-        AI_SERVICE_URL = "http://127.0.0.1:8001/generate"
-        API_KEY = "secretkey"
+        AI_SERVICE_URL = os.environ.get("NARRATION_SERVICE_URL", "http://narration:8001/generate")
+        # "http://127.0.0.1:8001/generate"
+        API_KEY = os.environ.get("NARRATION_API_KEY", "dev-key")
         
         # Determine sibling term based on character choice. This is purely for flavor/ context to the AI.
         sibling = "sister" if session.character.is_male else "brother"
@@ -38,8 +40,8 @@ class StoryService:
             return "The city of Kyoto burns in silence. Your journey begins in the smoke."
     @staticmethod
     def generate_narration(session, action_type, summary):
-        AI_SERVICE_URL = "http://127.0.0.1:8001/generate" 
-        API_KEY = "secretkey" 
+        AI_SERVICE_URL = os.getenv("NARRATION_SERVICE_URL", "http://narration:8001/generate")
+        API_KEY = os.getenv("NARRATION_API_KEY", "secretkey") 
 
         region_id = session.current_region
         region_metadata = KYOTO_REGIONS.get(region_id, {})

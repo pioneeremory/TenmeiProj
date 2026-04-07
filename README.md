@@ -46,14 +46,14 @@ x MAJOR change, add a world state that recalls the user choices, where they are 
   x The summary of outcomes should appear on the FE after each cycle (not action)
 - Add longer format cut scenes to break up the repetitive gameplay?
 - Actions that acknowledge the struggles surrounding the user, sometimes with no good choice (feed your starving sibling)
-- Add more acknowledgements to the end of each cycle/ cost of actions
+  x Add more acknowledgements to the end of each cycle/ cost of actions
   x Need to add a game state that can be saved and loaded
   x Store previous user actions, inventory, state as context for the AI to narrate from
 - Paginate the character select screen
 - Style the logout screen
   x Logged in user should only see the characters they own (not all)
-- Add a root page
-- Add an encounter system to curate the story a bit and break up the repetitive AI-driven narrative (Fixed cycle and special events)
+  x Add a root page
+  x Add an encounter system to curate the story a bit and break up the repetitive AI-driven narrative (Fixed cycle and special events)
 - Make quest rewards more meaningful (Monk new location)
 - Add more content and events based on the sibling's health and status
   x Visualize the death condition in the character selection screen

@@ -18,7 +18,11 @@ class MainCharacter(models.Model):
     def __str__(self):
         status = " (Deceased)" if self.is_dead == True else ""
         return f"{self.name}{status}"
-
+    def update(self, request, *args, **kwargs):
+        character = self.get_object()
+        character.name = request.data.get('name', character.name)
+        character.save()
+        return Response({"message": "Name Updated", "Name": character.name})
 
 class GameSession(models.Model):
     character = models.ForeignKey(MainCharacter, on_delete=models.CASCADE, related_name="game_sessions")
@@ -29,7 +33,6 @@ class GameSession(models.Model):
     
     
     story_log = models.TextField(default="The journey begins in the ashes of Kyoto...")
-    # is_generating = models.BooleanField(default=False)
     
     fire_danger = models.IntegerField(default=10)
     segments_left = models.IntegerField(default=3) # 3 actions per day
@@ -42,6 +45,7 @@ class GameSession(models.Model):
     pending_event = models.JSONField(null=True, blank=True) 
 
     has_monastery_key = models.BooleanField(default=False)
+    has_comb = models.BooleanField(default=False)
 
 
     def __str__(self):

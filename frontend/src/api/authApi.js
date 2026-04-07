@@ -1,3 +1,5 @@
+const BASE_URL = ''
+
 async function basicFetch(url, payload) {
   const res = await fetch(url, payload)
   const body = await res.json()
@@ -13,13 +15,13 @@ export async function signup(context) {
     },
     body: JSON.stringify(context)
   }
-  const body = await basicFetch("http://localhost:8000/auth/signup",payload)
+  const body = await basicFetch("/auth/signup",payload)
   return body
 }
 
 export const deleteCharacter = async (token, charId) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/characters/${charId}/`, {
+    const response = await fetch(`/api/characters/${charId}/`, {
       method: "DELETE",
       headers: {
         "Authorization": `Token ${token}`,
@@ -40,7 +42,7 @@ export async function login(context) {
     },
     body: JSON.stringify(context)
   }
-  const body = await basicFetch("http://localhost:8000/auth/get-token", payload)
+  const body = await basicFetch("/auth/get-token", payload)
   return body.token
 }
 
@@ -63,7 +65,7 @@ export async function getSessions(token) {
       "Authorization": `Token ${token}`
     }
   }
-  const body = await basicFetch("http://127.0.0.1:8000/api/sessions/", payload)
+  const body = await basicFetch("/api/sessions/", payload)
   return body
 }
 
@@ -76,7 +78,7 @@ export async function createSession(token, sessionData) {
     },
     body: JSON.stringify(sessionData)
   }
-  const body = await basicFetch("http://127.0.0.1:8000/api/sessions/", payload)
+  const body = await basicFetch("/api/sessions/", payload)
   return body
 }
 
@@ -89,11 +91,11 @@ export async function createCharacter(token, characterData) {
     },
     body: JSON.stringify(characterData)
   }
-  return await basicFetch("http://127.0.0.1:8000/api/characters/", payload)
+  return await basicFetch("/api/characters/", payload)
 }
 
 export async function getCharacters(token) {
-  const res = await fetch("http://127.0.0.1:8000/api/characters/", {
+  const res = await fetch("/api/characters/", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -111,7 +113,7 @@ export async function scavengeAction(token, sessionId) {
     headers: { "Authorization": `Token ${token}` }
   };
 
-  return await basicFetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/scavenge/`, payload);
+  return await basicFetch(`/api/sessions/${sessionId}/scavenge/`, payload);
 }
 
 
@@ -120,12 +122,12 @@ export async function restAction(token, sessionId) {
     method: "POST",
     headers: { "Authorization": `Token ${token}` }
   };
-  return await basicFetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/rest/`, payload);
+  return await basicFetch(`/api/sessions/${sessionId}/rest/`, payload);
 }
 
 export const performGameAction = async (token, sessionId, actionType) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/take_action/`, {
+    const response = await fetch(`/api/sessions/${sessionId}/take_action/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -142,7 +144,7 @@ export const performGameAction = async (token, sessionId, actionType) => {
 
 export const endCycle = async (token, sessionId) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/sessions/${sessionId}/end_day/`, {
+    const response = await fetch(`/api/sessions/${sessionId}/end_day/`, {
       method: "POST",
       headers: {
         "Authorization": `Token ${token}`,
