@@ -2,6 +2,7 @@ from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 import requests
 import sys
+import os
 
 app = FastAPI() 
 
@@ -14,16 +15,18 @@ def health():
 
 @app.post("/generate")
 async def generate(request: StoryRequest):
-    # 🎯 1. Forced Print for Debugging (This will show in Docker logs)
     print(f"RECEIVED REQUEST: {request.prompt}", flush=True)
-    sys.stdout.flush()
-
+    
+    # 🎯 Get the URL from .env, or use the old one as a backup
+    import os
+    OLLAMA_URL = os.environ.get("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
+    target_url = f"{OLLAMA_URL}/api/generate"
+    
     system_instruction = "Dark historical novelist, 1788 Kyoto. Exactly 2 sentences."
 
     try:
-        # 🎯 2. Using the bridge to Ollama
         r = requests.post(
-            "http://host.docker.internal:11434/api/generate",
+            target_url, # 🎯 Now using the dynamic variable
             json={
                 "model": "llama3.1:latest", 
                 "prompt": request.prompt,
@@ -37,3 +40,28 @@ async def generate(request: StoryRequest):
     except Exception as e:
         print(f"!!! OLLAMA CONNECTION ERROR: {e} !!!", flush=True)
         return {"response": f"The spirits are silent. Error: {e}"}
+
+# @app.post("/generate")
+# async def generate(request: StoryRequest):
+#     # 🎯 1. Forced Print for Debugging (This will show in Docker logs)
+#     print(f"RECEIVED REQUEST: {request.prompt}", flush=True)
+#     sys.stdout.flush()
+
+#     system_instruction = "Dark historical novelist, 1788 Kyoto. Exactly 2 sentences."
+
+#     try:
+#         r = requests.post(
+#             "http://host.docker.internal:11434/api/generate",
+#             json={
+#                 "model": "llama3.1:latest", 
+#                 "prompt": request.prompt,
+#                 "system": system_instruction, 
+#                 "stream": False
+#             },
+#             timeout=60 
+#         )
+#         print(f"OLLAMA RESPONSE STATUS: {r.status_code}", flush=True)
+#         return {"response": r.json().get("response")}
+#     except Exception as e:
+#         print(f"!!! OLLAMA CONNECTION ERROR: {e} !!!", flush=True)
+#         return {"response": f"The spirits are silent. Error: {e}"}
