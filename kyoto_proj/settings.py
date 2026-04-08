@@ -46,15 +46,17 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware', 
+    'corsheaders.middleware.CorsMiddleware',         
+    'django.middleware.common.CommonMiddleware',      
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -67,6 +69,15 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost",
     "http://127.0.0.1",
     "http://18.191.123.246"
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 ROOT_URLCONF = 'kyoto_proj.urls'
