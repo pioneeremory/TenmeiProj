@@ -2,6 +2,10 @@
 
 This is a personal project that tests my ability to bring together full stack knowledge and limited AI in order to create a web-based LitRPG with high stakes and compelling narrative decisions.
 
+Here is the EC2 version:
+
+http://18.191.123.246/
+
 # Django admin
 
 logan, pass
